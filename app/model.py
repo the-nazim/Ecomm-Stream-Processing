@@ -2,11 +2,10 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, TIMESTAMP, DECIMAL, func
 from sqlalchemy.orm import sessionmaker
-import os
+from sqlalchemy.ext.asyncio import AsyncSession
+from settings import settings
 
-DATABASE = os.getenv("DATABASE_URL")
-
-engine = create_async_engine(DATABASE)
+engine = create_async_engine(settings.DATABASE_URL, echo=True)
 Base = declarative_base()
 AsyncSessionLocal = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
