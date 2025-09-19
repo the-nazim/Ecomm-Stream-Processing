@@ -1,0 +1,15 @@
+{% if cart %}
+<ul>
+  {% for item in cart %}
+  <li class="flex justify-between border-b py-1">
+    <span>{{ item.name }}</span>
+    <span>${{ item.price }}</span>
+  </li>
+  {% endfor %}
+</ul>
+<p class="mt-2 font-semibold">
+  Total: ${{ cart | sum(attribute="price") }}
+</p>
+{% else %}
+<p class="text-gray-500">Your cart is empty.</p>
+{% endif %}

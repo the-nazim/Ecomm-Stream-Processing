@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Simple E-commerce</h1>
+
+<div class="grid grid-cols-3 gap-6">
+  {% for product in products %}
+  <div class="p-4 bg-white rounded shadow">
+    <h2 class="font-semibold">{{ product.name }}</h2>
+    <p class="text-gray-600">${{ product.price }}</p>
+    <form hx-post="/add-to-cart" hx-target="#cart" hx-swap="innerHTML">
+      <input type="hidden" name="product_id" value="{{ product.id }}">
+      <button class="mt-2 px-3 py-1 bg-blue-500 text-white rounded">Add to Cart</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+
+<h2 class="text-xl font-bold mt-6">Cart</h2>
+<div id="cart" class="bg-white p-4 rounded shadow">
+  {% include "_cart.html" %}
+</div>
+{% endblock %}
