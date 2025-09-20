@@ -10,20 +10,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/app/static/css/custom.css">
 </head>
 <body class="bg-gray-50 min-h-full flex flex-col">
-    <header class="bg-white shadow-sm border-b">
+    <header class="header-container">
         <div class="container mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-8">
-                <a href="/" class="text-2xl font-bold text-indigo-600">ShopEasy</a>
+                <a href="/" class="text-2xl font-bold text-white">ShopEasy</a>
                 <nav class="hidden md:flex space-x-6">
-                    <a href="/" class="text-gray-700 hover:text-indigo-600 font-medium">Home</a>
+                    <a href="/" class="nav-link text-white hover:text-white font-medium">Home</a>
                     <a href="/products" 
-                       hx-get="/products" 
-                       hx-target="#main-content" 
-                       hx-push-url="true"
-                       class="text-gray-700 hover:text-indigo-600 font-medium">Products</a>
-                    <a href="#" class="text-gray-700 hover:text-indigo-600 font-medium">Categories</a>
+                    hx-get="/products" 
+                    hx-target="#main-content" 
+                    hx-push-url="true"
+                    class="nav-link text-white hover:text-white font-medium">Products</a>
+                    <a href="#" class="nav-link text-white hover:text-white font-medium">Categories</a>
                 </nav>
             </div>
             <div class="flex items-center space-x-4">
@@ -31,29 +32,28 @@
                     hx-get="/cart" 
                     hx-target="#main-content" 
                     hx-push-url="true"
-                    class="relative p-2 text-gray-700 hover:text-indigo-600">
+                    class="cart-icon relative p-2 text-white hover:text-gray-200">
                     <i class="fa fa-shopping-cart text-xl"></i>
-                    <span id="cart-count" class="absolute -top-1 -right-1 bg-indigo-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        <!-- Cart count will be loaded via API -->
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                         0
                     </span>
                 </button>
-                <button class="hidden md:block bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Sign In</button>
+                <button class="hidden md:block bg-white text-indigo-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition font-medium">Sign In</button>
             </div>
         </div>
     </header>
 
     <main id="main-content" class="flex-grow">
         <!-- Hero Section -->
-        <section class="bg-indigo-700 text-white py-16">
+        <section class="hero-section py-16">
             <div class="container mx-auto px-4 text-center">
-                <h1 class="text-4xl md:text-5xl font-bold mb-4">Welcome to ShopEasy</h1>
-                <p class="text-xl mb-8 max-w-2xl mx-auto">Discover amazing products at unbeatable prices. Shop with ease and get free shipping on orders over $50.</p>
+                <h1 class="hero-title mb-4">Welcome to ShopEasy</h1>
+                <p class="hero-subtitle">Discover amazing products at unbeatable prices. Shop with ease and get free shipping on orders over $50.</p>
                 <button 
                     hx-get="/products" 
                     hx-target="#main-content" 
                     hx-push-url="true"
-                    class="bg-white text-indigo-700 px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-100 transition">
+                    class="hero-button">
                     Shop Now
                 </button>
             </div>
@@ -65,78 +65,84 @@
                 <h2 class="text-3xl font-bold text-center mb-12">Featured Products</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <!-- Product Card 1 -->
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                        <div class="h-64 bg-gray-200 overflow-hidden cursor-pointer"
-                             hx-get="/product/1"
-                             hx-target="#main-content"
-                             hx-push-url="true">
-                            <img src="https://via.placeholder.com/300x300?text=Headphones" alt="Wireless Headphones" class="w-full h-full object-cover">
+                    <div class="product-card">
+                    <div class="product-card-image">
+                        <img src="https://via.placeholder.com/300x300?text=Headphones" alt="Wireless Headphones">
+                        <span class="product-card-badge">NEW</span>
+                    </div>
+                    <div class="product-card-content">
+                        <h3 class="product-card-title">Wireless Headphones</h3>
+                        <p class="product-card-description">Premium sound quality with noise cancellation</p>
+                        <ul class="list-disc list-inside text-gray-600 mb-3">
+                        <li>Bluetooth 5.0</li>
+                        <li>20hr Battery Life</li>
+                        <li>Noise Cancelling</li>
+                        </ul>
+                        <div class="flex justify-between items-center mt-auto">
+                        <span class="product-card-price">$129.99</span>
+                        <button 
+                            class="product-card-button"
+                            hx-post="/api/cart/add"
+                            hx-vals='{"id": "1", "name": "Wireless Headphones", "price": 129.99}'
+                            hx-target="#cart-count"
+                            hx-swap="innerHTML"
+                            hx-on="htmx:afterRequest: this.innerText = 'Added!'; setTimeout(() => this.innerText = 'Add to Cart', 2000)">
+                            <i class="fa fa-shopping-cart"></i> Add to Cart
+                        </button>
                         </div>
-                        <div class="p-6">
-                            <h3 class="font-semibold text-xl mb-2">Wireless Headphones</h3>
-                            <p class="text-gray-600 mb-4">Premium sound quality with noise cancellation</p>
+                    </div>
+                    <div class="p-4 border-t">
+                        <a href="#" class="text-indigo-600 font-medium hover:underline">More Details</a>
+                        <a href="#" class="text-indigo-600 font-medium hover:underline ml-4">Wishlist</a>
+                    </div>
+                    </div>
+
+
+                    <!-- Product Card 2 -->
+                    <div class="product-card animate-fade-in-up">
+                        <div class="product-card-image">
+                            <img src="https://via.placeholder.com/300x300?text=Headphones" alt="Wireless Headphones">
+                            <span class="product-card-badge">NEW</span>
+                        </div>
+                        <div class="product-card-content">
+                            <h3 class="product-card-title">Wireless Headphones</h3>
+                            <p class="product-card-description">Premium sound quality with noise cancellation</p>
                             <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-indigo-600">$129.99</span>
+                                <span class="product-card-price">$129.99</span>
                                 <button 
-                                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+                                    class="product-card-button"
                                     hx-post="/api/cart/add"
                                     hx-vals='{"id": "1", "name": "Wireless Headphones", "price": 129.99}'
                                     hx-target="#cart-count"
                                     hx-swap="innerHTML"
-                                    hx-on="htmx:afterRequest: this.innerText = 'Added!'; setTimeout(() => this.innerText = 'Add to Cart', 2000)">
-                                    Add to Cart
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Product Card 2 -->
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                        <div class="h-64 bg-gray-200 overflow-hidden cursor-pointer"
-                             hx-get="/product/2"
-                             hx-target="#main-content"
-                             hx-push-url="true">
-                            <img src="https://via.placeholder.com/300x300?text=Smartwatch" alt="Smart Watch" class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-6">
-                            <h3 class="font-semibold text-xl mb-2">Smart Watch</h3>
-                            <p class="text-gray-600 mb-4">Track your fitness and stay connected</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-indigo-600">$199.99</span>
-                                <button 
-                                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
-                                    hx-post="/api/cart/add"
-                                    hx-vals='{"id": "2", "name": "Smart Watch", "price": 199.99}'
-                                    hx-target="#cart-count"
-                                    hx-swap="innerHTML"
-                                    hx-on="htmx:afterRequest: this.innerText = 'Added!'; setTimeout(() => this.innerText = 'Add to Cart', 2000)">
-                                    Add to Cart
+                                    hx-on="htmx:beforeSend: this.classList.add('loading')"
+                                    hx-on="htmx:afterSettle: this.classList.remove('loading')">
+                                    <i class="fa fa-shopping-cart"></i> Add to Cart
                                 </button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Product Card 3 -->
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                        <div class="h-64 bg-gray-200 overflow-hidden cursor-pointer"
-                             hx-get="/product/3"
-                             hx-target="#main-content"
-                             hx-push-url="true">
-                            <img src="https://via.placeholder.com/300x300?text=Speaker" alt="Portable Speaker" class="w-full h-full object-cover">
+                    <div class="product-card animate-fade-in-up">
+                        <div class="product-card-image">
+                            <img src="https://via.placeholder.com/300x300?text=Headphones" alt="Wireless Headphones">
+                            <span class="product-card-badge">NEW</span>
                         </div>
-                        <div class="p-6">
-                            <h3 class="font-semibold text-xl mb-2">Portable Speaker</h3>
-                            <p class="text-gray-600 mb-4">Waterproof with 20-hour battery life</p>
+                        <div class="product-card-content">
+                            <h3 class="product-card-title">Wireless Headphones</h3>
+                            <p class="product-card-description">Premium sound quality with noise cancellation</p>
                             <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-indigo-600">$79.99</span>
+                                <span class="product-card-price">$129.99</span>
                                 <button 
-                                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+                                    class="product-card-button"
                                     hx-post="/api/cart/add"
-                                    hx-vals='{"id": "3", "name": "Portable Speaker", "price": 79.99}'
+                                    hx-vals='{"id": "1", "name": "Wireless Headphones", "price": 129.99}'
                                     hx-target="#cart-count"
                                     hx-swap="innerHTML"
-                                    hx-on="htmx:afterRequest: this.innerText = 'Added!'; setTimeout(() => this.innerText = 'Add to Cart', 2000)">
-                                    Add to Cart
+                                    hx-on="htmx:beforeSend: this.classList.add('loading')"
+                                    hx-on="htmx:afterSettle: this.classList.remove('loading')">
+                                    <i class="fa fa-shopping-cart"></i> Add to Cart
                                 </button>
                             </div>
                         </div>
@@ -158,35 +164,41 @@
         </section>
     </main>
 
-    <footer class="bg-gray-800 text-white py-12">
+    <footer class="footer-container py-12">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
-                    <h3 class="text-xl font-bold mb-4">ShopEasy</h3>
+                    <h3 class="footer-heading text-xl font-bold mb-4">ShopEasy</h3>
                     <p class="text-gray-400">Making online shopping simple and enjoyable.</p>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4">Shop</h4>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="/products" class="hover:text-white">All Products</a></li>
-                        <li><a href="#" class="hover:text-white">New Arrivals</a></li>
-                        <li><a href="#" class="hover:text-white">Best Sellers</a></li>
+                    <h4 class="footer-heading font-semibold mb-4">Shop</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/products" class="footer-link hover:text-white">All Products</a></li>
+                        <li><a href="#" class="footer-link hover:text-white">New Arrivals</a></li>
+                        <li><a href="#" class="footer-link hover:text-white">Best Sellers</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4">Support</h4>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="#" class="hover:text-white">Contact Us</a></li>
-                        <li><a href="#" class="hover:text-white">FAQ</a></li>
-                        <li><a href="#" class="hover:text-white">Shipping Info</a></li>
+                    <h4 class="footer-heading font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="footer-link hover:text-white">Contact Us</a></li>
+                        <li><a href="#" class="footer-link hover:text-white">FAQ</a></li>
+                        <li><a href="#" class="footer-link hover:text-white">Shipping Info</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4">Connect</h4>
+                    <h4 class="footer-heading font-semibold mb-4">Connect</h4>
                     <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon hover:text-white">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-icon hover:text-white">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-icon hover:text-white">
+                            <i class="fab fa-instagram"></i>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -195,7 +207,6 @@
             </div>
         </div>
     </footer>
-
     <script>
         // Initialize cart count on page load
         document.addEventListener('DOMContentLoaded', function() {

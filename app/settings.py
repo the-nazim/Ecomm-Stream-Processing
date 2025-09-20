@@ -7,6 +7,10 @@ load_dotenv(dotenv_path=os.path.join(BASEDIR, ".env"))
 class Settings:
     DATABASE_URL: str = os.getenv("DATABASE_URL")
 
+    SECRET_KEY: str = os.getenv("SECRET_KEY")
+    ALGORITHM: str = os.getenv("HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+
     APP_NAME: str = "E-Commerce Store"
 
 settings = Settings()
