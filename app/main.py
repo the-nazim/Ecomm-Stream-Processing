@@ -53,3 +53,10 @@ async def login(form_data: schemas.UserLogin, db: AsyncSession = Depends(get_db)
     
     token = auth.create_access_token({"sub": user.email})
     return {"access_token": token, "token_type": "bearer"}
+
+# ========== Product Routes ==========
+@app.post("/add-product")
+async def addProduct(form_data: schemas.ProductCreate, db: AsyncSession = Depends(get_db)):
+    new_product = await crud.create_product(db, form_data)
+    return {"message": "Product added successfully", "product": new_product}
+
