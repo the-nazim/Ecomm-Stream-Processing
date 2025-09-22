@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from contextlib import asynccontextmanager
 from fastapi.security import OAuth2PasswordRequestForm
-from . import schemas, crud, auth
+import schemas, crud, auth
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -46,8 +46,8 @@ async def register(user: schemas.UserCreate, db: AsyncSession = Depends(get_db))
 
 
 @app.post("/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    user = await crud.get_user_by_email(db, form_data.username)
+async def login(form_data: schemas.UserLogin, db: AsyncSession = Depends(get_db)):
+    user = await crud.get_user_by_email(db, form_data.email)
     if not user or not auth.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     

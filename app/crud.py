@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from . import model, schemas
-from .auth import hash_password, verify_password
+import model, schemas
+from auth import hash_password, verify_password
 
 # Register user
 async def create_user(db: AsyncSession, user: schemas.UserCreate):
