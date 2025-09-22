@@ -55,8 +55,33 @@ async def login(form_data: schemas.UserLogin, db: AsyncSession = Depends(get_db)
     return {"access_token": token, "token_type": "bearer"}
 
 # ========== Product Routes ==========
-@app.post("/add-product")
-async def addProduct(form_data: schemas.ProductCreate, db: AsyncSession = Depends(get_db)):
+@app.post("/create-product")
+async def createProduct(form_data: schemas.ProductCreate, db: AsyncSession = Depends(get_db)):
     new_product = await crud.create_product(db, form_data)
     return {"message": "Product added successfully", "product": new_product}
 
+@app.get("/products")
+async def listProducts(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
+    products = await crud.get_products(db, skip=skip, limit=limit)
+    return {"products": products}
+
+@app.get("/products/{product_id}")
+async def getProduct(product_id: int, db: AsyncSession = Depends(get_db)):
+    product = await crud.get_product(db, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"product": product}
+
+@app.post("/update-product/{product_id}")
+async def updateProduct(product_id: int, form_data: schemas.ProductCreate, db: AsyncSession = Depends(get_db)):
+    updateProd = await crud.update_product(db, product_id, form_data) 
+    if not updateProd:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Product updated successfully", "product": updateProd}
+
+@app.delete("/delete-product/{product_id}")
+async def deleteProduct(product_id: int, db: AsyncSession = Depends(get_db)):
+    deletedProd = await crud.delete_product(db, product_id)
+    if not deletedProd:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Product deleted successfully", "product": deletedProd}
