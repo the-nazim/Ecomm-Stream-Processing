@@ -39,6 +39,25 @@ class CartItem(Base):
     user = relationship("User", backref="cart_items")
     product = relationship("Product")
 
+class Order(Base):
+    __tablename__ = 'orders'
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    status = Column(String(50), default='PENDING')
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+    items = relationship("OrderItem", back_populates="order")
+
+class OrderItem(Base):
+    __tablename__ = 'order_items'
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey('orders.id'), nullable=False)
+    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
+    quantity = Column(Integer, default=1)
+
+    order = relationship("Order", back_populates="items")
+    product = relationship("Product")
+
 async def create_db_and_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

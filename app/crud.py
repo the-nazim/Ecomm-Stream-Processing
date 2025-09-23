@@ -97,5 +97,5 @@ async def remove_from_cart(db: AsyncSession, user_id: int, product_id: int):
     return cartItem
 
 async def get_cart(db: AsyncSession, user_id: int):
-    cartItem = await db.execute(select(model.CartItem).where(CartItem.user_id==user_id))
+    cartItem = await db.execute(select(model.CartItem).where(model.CartItem.user_id==user_id))
     return cartItem.scalars().all()

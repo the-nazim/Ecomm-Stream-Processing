@@ -9,7 +9,9 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from contextlib import asynccontextmanager
 from fastapi.security import OAuth2PasswordRequestForm
-import schemas, crud, auth
+from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
+import schemas, crud, auth, model
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -101,3 +103,63 @@ async def removeFromCart(product_id: int, db: AsyncSession = Depends(get_db), us
 @app.get("/cart")
 async def getCart(db: AsyncSession = Depends(get_db), user_id: int=1):
     return await crud.get_cart(db, user_id)
+
+# ========== Buyout Routes ==========
+@app.post("/buy")
+async def placeOrder(db: AsyncSession = Depends(get_db), user_id: int=1):
+    result = await db.execute(select(model.CartItem).where(model.CartItem.user_id == user_id))
+    cart_items = result.scalars().all()
+
+    if not cart_items:
+        raise HTTPException(status_code=400, detail="Cart is empty")
+    
+    newOrder = model.Order(user_id=user_id, status='PENDING')
+    db.add(newOrder)
+    await db.flush()
+
+    for item in cart_items:
+        order_item = model.OrderItem(
+            order_id=newOrder.id,
+            product_id=item.product_id,
+            quantity=item.quantity
+        )
+        db.add(order_item)
+        
+        product = await db.get(model.Product, item.product_id)
+        if product.stock < item.quantity:
+            raise HTTPException(status_code=400, detail=f"Insufficient stock for product {product.name}")
+        
+        product.stock -= item.quantity
+        await db.delete(item)
+    
+    await db.commit()
+    await db.refresh(newOrder)
+    return {"message": "Order placed successfully", "order_id": newOrder.id}
+
+@app.post("/cancel/{order_id}")
+async def cancelOrder(order_id: int, user_id: int=1, db:AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(model.Order)
+        .options(selectinload(model.Order.items))
+        .where(model.Order.id == order_id)
+    )
+    order = result.scalars().first()
+    if not order or order.user_id != user_id:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.status != 'PENDING':
+        raise HTTPException(status_code=400, detail="Only pending orders can be cancelled")
+    
+    for item in order.items:
+        product = await db.get(model.Product, item.product_id)
+        product.stock += item.quantity
+    
+    order.status = 'CANCELLED'
+    await db.commit()
+    await db.refresh(order)
+    return {"message": "Order cancelled successfully"}
+
+@app.get("/orders")
+async def listOrders(user_id: int=1, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(model.Order).where(model.Order.user_id == user_id))
+    orders = result.scalars().all()
+    return {"orders": orders}
