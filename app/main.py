@@ -72,7 +72,7 @@ async def getProduct(product_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Product not found")
     return {"product": product}
 
-@app.post("/update-product/{product_id}")
+@app.put("/update-product/{product_id}")
 async def updateProduct(product_id: int, form_data: schemas.ProductCreate, db: AsyncSession = Depends(get_db)):
     updateProd = await crud.update_product(db, product_id, form_data) 
     if not updateProd:
@@ -85,3 +85,19 @@ async def deleteProduct(product_id: int, db: AsyncSession = Depends(get_db)):
     if not deletedProd:
         raise HTTPException(status_code=404, detail="Product not found")
     return {"message": "Product deleted successfully", "product": deletedProd}
+
+# ========== Cart Routes ==========
+@app.post("/add-to-cart")
+async def addToCart(form_data: schemas.CartItemCreate, db: AsyncSession = Depends(get_db), user_id: int=1):
+    return await crud.add_to_cart(db, user_id, form_data)
+
+@app.delete("/remove/{product_id}")
+async def removeFromCart(product_id: int, db: AsyncSession = Depends(get_db), user_id: int=1):
+    result = await crud.remove_from_cart(db, user_id, product_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Item not found in cart")
+    return {"message":"Item successfully removed"}
+
+@app.get("/cart")
+async def getCart(db: AsyncSession = Depends(get_db), user_id: int=1):
+    return await crud.get_cart(db, user_id)

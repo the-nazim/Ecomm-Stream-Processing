@@ -57,3 +57,45 @@ async def delete_product(db: AsyncSession, product_id: int):
     await db.delete(currProduct)
     await db.commit()
     return currProduct
+
+# ========== Cart Management ==========
+async def add_to_cart(db: AsyncSession, user_id: int, item: schemas.CartItemBase):
+    newItem = await db.execute(
+        select(model.CartItem).where(
+            model.CartItem.user_id == user_id,
+            model.CartItem.product_id == item.product_id
+        )
+    )
+    cartItem = newItem.scalar_one_or_none()
+
+    if cartItem:
+        cartItem.quantity += item.quantity
+    else:
+        cartItem = model.CartItem(
+            user_id=user_id,
+            product_id=item.product_id,
+            quantity=item.quantity
+        )
+        db.add(cartItem)
+    
+    await db.commit()
+    await db.refresh(cartItem)
+    return cartItem
+
+async def remove_from_cart(db: AsyncSession, user_id: int, product_id: int):
+    item = await db.execute(
+        select(model.CartItem).where(
+            model.CartItem.user_id == user_id,
+            model.CartItem.product_id == product_id
+        )
+    )
+    cartItem = item.scalar_one_or_none()
+    if not cartItem:
+        return None
+    await db.delete(cartItem)
+    await db.commit()
+    return cartItem
+
+async def get_cart(db: AsyncSession, user_id: int):
+    cartItem = await db.execute(select(model.CartItem).where(CartItem.user_id==user_id))
+    return cartItem.scalars().all()

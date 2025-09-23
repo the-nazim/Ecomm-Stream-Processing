@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, TIMESTAMP, DECIMAL, func
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy import ForeignKey
 from sqlalchemy.ext.asyncio import AsyncSession
 from settings import settings
 
@@ -26,6 +27,17 @@ class Product(Base):
     category = Column(String(100))
     stock = Column(Integer)
     created_at = Column(TIMESTAMP, server_default=func.now())
+
+class CartItem(Base):
+    __tablename__ = 'cart_items'
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
+    quantity = Column(Integer, default=1)
+    added_at = Column(TIMESTAMP, server_default=func.now())
+
+    user = relationship("User", backref="cart_items")
+    product = relationship("Product")
 
 async def create_db_and_tables():
     async with engine.begin() as conn:

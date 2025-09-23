@@ -33,3 +33,17 @@ class ProductOut(ProductBase):      # For output when returning product data
     id: int
     class Config:
         orm_mode = True
+
+# ========== Cart Item ==========
+class CartItemBase(BaseModel):
+    product_id: int
+    quantity: int = 1
+
+class CartItemCreate(CartItemBase):  # For input when adding item to cart
+    pass
+
+class CartItemOut(CartItemBase):     # For output when returning cart item data
+    id: int
+    user_id: int
+    class Config:
+        orm_mode = True
