@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, TIMESTAMP, DECIMAL, func
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import ForeignKey
 from sqlalchemy.ext.asyncio import AsyncSession
-from settings import settings
+from app.settings import settings
 
 engine = create_async_engine(settings.DATABASE_URL, echo=True)
 Base = declarative_base()

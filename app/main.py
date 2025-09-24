@@ -1,8 +1,8 @@
 import asyncio
 from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from contextlib import asynccontextmanager
-from model import create_db_and_tables, engine, Base, get_db
-from settings import settings
+# from model import create_db_and_tables, engine, Base, get_db
+# from settings import settings
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -11,7 +11,10 @@ from contextlib import asynccontextmanager
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-import schemas, crud, auth, model
+# import schemas, crud, auth, model
+from app.model import create_db_and_tables, engine, Base, get_db
+from app import settings, schemas, crud, auth, model
+from streams.events import send_order_event
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,22 +23,13 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown code (if needed)
 
-app = FastAPI(lifespan=lifespan, title=settings.APP_NAME)
+app = FastAPI(lifespan=lifespan)
 
 # Mount static files
-app.mount("/app/static", StaticFiles(directory="static"), name="static")
+# app.mount("/app/static", StaticFiles(directory="static"), name="static")
 
 # Jinja2 templates
-templates = Jinja2Templates(directory="templates")
-
-# Fake product data
-products = [
-    {"id": 1, "name": "Laptop", "price": 800},
-    {"id": 2, "name": "Phone", "price": 500},
-    {"id": 3, "name": "Headphones", "price": 100},
-]
-
-cart = []
+# templates = Jinja2Templates(directory="templates")
 
 
 # ========== Auth Routes ==========
@@ -134,6 +128,8 @@ async def placeOrder(db: AsyncSession = Depends(get_db), user_id: int=1):
     
     await db.commit()
     await db.refresh(newOrder)
+    await send_order_event(newOrder.id, user_id, newOrder.status)
+
     return {"message": "Order placed successfully", "order_id": newOrder.id}
 
 @app.post("/cancel/{order_id}")

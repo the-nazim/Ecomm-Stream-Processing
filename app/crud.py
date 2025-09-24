@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-import model, schemas
-from auth import hash_password, verify_password
+from app import model, schemas
+from app.auth import hash_password, verify_password
 
 
 # ========== User Management ==========
