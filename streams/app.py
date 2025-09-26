@@ -1,13 +1,13 @@
 import faust 
 
-app = faust.App('myapp', broker='kafka://localhost:9092')
+app = faust.App('myapp', broker='kafka://host.docker.internal:9092')
 
-class OrerEvent(faust.Record, serializer='json'):
+class OrderEvent(faust.Record, serializer='json'):
     order_id: int
     user_id: int
     status: str 
 
-order_topic = app.topic('order_events', value_type=OrerEvent)
+order_topic = app.topic('order_events', value_type=OrderEvent)
 
 @app.agent(order_topic)
 async def process_order(orders):

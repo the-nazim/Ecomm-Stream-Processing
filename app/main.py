@@ -98,7 +98,7 @@ async def removeFromCart(product_id: int, db: AsyncSession = Depends(get_db), us
 async def getCart(db: AsyncSession = Depends(get_db), user_id: int=1):
     return await crud.get_cart(db, user_id)
 
-# ========== Buyout Routes ==========
+# ========== Orders Routes ==========
 @app.post("/buy")
 async def placeOrder(db: AsyncSession = Depends(get_db), user_id: int=1):
     result = await db.execute(select(model.CartItem).where(model.CartItem.user_id == user_id))

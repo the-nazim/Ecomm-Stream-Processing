@@ -1,8 +1,8 @@
-from aiokafka import AIOKafkaConsumer
+from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 import asyncio, json
 
 async def send_order_event(order_id: int, user_id: int, status: str):
-    producer = AIOKafkaConsumer(bootstrap_servers='localhost:9092')
+    producer = AIOKafkaProducer(bootstrap_servers='localhost:9092')
     await producer.start()
 
     try:
