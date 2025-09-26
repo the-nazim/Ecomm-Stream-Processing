@@ -16,6 +16,7 @@ class User(Base):
     username = Column(String(100), unique=True, nullable=False)
     email = Column(String(150), unique=True, nullable=False)
     hashed_password = Column(String(256), nullable=False)
+    role = Column(String(50), default='customer')
     created_at = Column(TIMESTAMP, server_default=func.now())
 
 class Product(Base):

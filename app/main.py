@@ -1,8 +1,6 @@
 import asyncio
 from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from contextlib import asynccontextmanager
-# from model import create_db_and_tables, engine, Base, get_db
-# from settings import settings
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -11,7 +9,6 @@ from contextlib import asynccontextmanager
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-# import schemas, crud, auth, model
 from app.model import create_db_and_tables, engine, Base, get_db
 from app import settings, schemas, crud, auth, model
 from streams.events import send_order_event
@@ -52,7 +49,7 @@ async def login(form_data: schemas.UserLogin, db: AsyncSession = Depends(get_db)
 
 # ========== Product Routes ==========
 @app.post("/create-product")
-async def createProduct(form_data: schemas.ProductCreate, db: AsyncSession = Depends(get_db)):
+async def createProduct(form_data: schemas.ProductCreate, db: AsyncSession = Depends(get_db), currentUser: model.User = Depends(auth.require_role('admin'))):
     new_product = await crud.create_product(db, form_data)
     return {"message": "Product added successfully", "product": new_product}
 
@@ -100,7 +97,8 @@ async def getCart(db: AsyncSession = Depends(get_db), user_id: int=1):
 
 # ========== Orders Routes ==========
 @app.post("/buy")
-async def placeOrder(db: AsyncSession = Depends(get_db), user_id: int=1):
+async def placeOrder(db: AsyncSession = Depends(get_db), currentUser: model.User = Depends(auth.require_role('customer'))):
+    user_id = currentUser.id
     result = await db.execute(select(model.CartItem).where(model.CartItem.user_id == user_id))
     cart_items = result.scalars().all()
 
@@ -128,7 +126,7 @@ async def placeOrder(db: AsyncSession = Depends(get_db), user_id: int=1):
     
     await db.commit()
     await db.refresh(newOrder)
-    await send_order_event(newOrder.id, user_id, newOrder.status)
+    # await send_order_event(newOrder.id, user_id, newOrder.status)
 
     return {"message": "Order placed successfully", "order_id": newOrder.id}
 

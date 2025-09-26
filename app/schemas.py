@@ -1,9 +1,10 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 # ========== User ==========
 class UserBase(BaseModel):
     username: str
     email: EmailStr
+    role: str = Field(default='customer')
 
 class UserCreate(UserBase):   # For input when creating a new user
     password: str
