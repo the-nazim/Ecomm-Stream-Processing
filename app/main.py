@@ -12,6 +12,7 @@ from sqlalchemy.orm import selectinload
 from app.model import create_db_and_tables, engine, Base, get_db
 from app import settings, schemas, crud, auth, model
 from streams.events import send_order_event
+from app.routers import product_router, cart_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,6 +22,9 @@ async def lifespan(app: FastAPI):
     # Shutdown code (if needed)
 
 app = FastAPI(lifespan=lifespan)
+
+app.include_router(product_router)
+app.include_router(cart_router)
 
 # Mount static files
 # app.mount("/app/static", StaticFiles(directory="static"), name="static")
@@ -46,54 +50,6 @@ async def login(form_data: schemas.UserLogin, db: AsyncSession = Depends(get_db)
     
     token = auth.create_access_token({"sub": user.email})
     return {"access_token": token, "token_type": "bearer"}
-
-# ========== Product Routes ==========
-@app.post("/create-product")
-async def createProduct(form_data: schemas.ProductCreate, db: AsyncSession = Depends(get_db), currentUser: model.User = Depends(auth.require_role('admin'))):
-    new_product = await crud.create_product(db, form_data)
-    return {"message": "Product added successfully", "product": new_product}
-
-@app.get("/products")
-async def listProducts(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
-    products = await crud.get_products(db, skip=skip, limit=limit)
-    return {"products": products}
-
-@app.get("/products/{product_id}")
-async def getProduct(product_id: int, db: AsyncSession = Depends(get_db)):
-    product = await crud.get_product(db, product_id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return {"product": product}
-
-@app.put("/update-product/{product_id}")
-async def updateProduct(product_id: int, form_data: schemas.ProductCreate, db: AsyncSession = Depends(get_db)):
-    updateProd = await crud.update_product(db, product_id, form_data) 
-    if not updateProd:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return {"message": "Product updated successfully", "product": updateProd}
-
-@app.delete("/delete-product/{product_id}")
-async def deleteProduct(product_id: int, db: AsyncSession = Depends(get_db)):
-    deletedProd = await crud.delete_product(db, product_id)
-    if not deletedProd:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return {"message": "Product deleted successfully", "product": deletedProd}
-
-# ========== Cart Routes ==========
-@app.post("/add-to-cart")
-async def addToCart(form_data: schemas.CartItemCreate, db: AsyncSession = Depends(get_db), user_id: int=1):
-    return await crud.add_to_cart(db, user_id, form_data)
-
-@app.delete("/remove/{product_id}")
-async def removeFromCart(product_id: int, db: AsyncSession = Depends(get_db), user_id: int=1):
-    result = await crud.remove_from_cart(db, user_id, product_id)
-    if not result:
-        raise HTTPException(status_code=404, detail="Item not found in cart")
-    return {"message":"Item successfully removed"}
-
-@app.get("/cart")
-async def getCart(db: AsyncSession = Depends(get_db), user_id: int=1):
-    return await crud.get_cart(db, user_id)
 
 # ========== Orders Routes ==========
 @app.post("/buy")
@@ -126,7 +82,7 @@ async def placeOrder(db: AsyncSession = Depends(get_db), currentUser: model.User
     
     await db.commit()
     await db.refresh(newOrder)
-    # await send_order_event(newOrder.id, user_id, newOrder.status)
+    await send_order_event(newOrder.id, user_id, newOrder.status)
 
     return {"message": "Order placed successfully", "order_id": newOrder.id}
 
