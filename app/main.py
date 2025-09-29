@@ -1,7 +1,7 @@
 import asyncio
 from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from contextlib import asynccontextmanager
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +13,7 @@ from app.model import create_db_and_tables, engine, Base, get_db
 from app import settings, schemas, crud, auth, model
 from streams.events import send_order_event
 from app.routers import product_router, cart_router
+from streams.app import sse_generator
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -113,3 +114,9 @@ async def listOrders(user_id: int=1, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(model.Order).where(model.Order.user_id == user_id))
     orders = result.scalars().all()
     return {"orders": orders}
+
+@app.get("/notification")
+async def notification(request: Request, currentUser: model.User = Depends(auth.require_role('customer'))):
+    user_id = currentUser.id
+    generator = sse_generator(user_id)
+    return StreamingResponse(generator, media_type="text/event-stream")
